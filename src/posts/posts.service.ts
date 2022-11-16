@@ -1,24 +1,61 @@
-import { Injectable } from '@nestjs/common';
-import { faker } from '@faker-js/faker';
+import { Injectable, PreconditionFailedException } from '@nestjs/common';
 
+import { data } from './db/users.js';
 import { PostsDataBase } from './posts.inteface';
 
+enum sortOrder {
+  asc = 'asc',
+  desc = 'desc',
+  otro = 'otro',
+}
 @Injectable()
 export class PostsService {
   findAll(): PostsDataBase[] {
-    const data: PostsDataBase[] = [];
-    for (let i = 0; i < 100; i++) {
-      const fakeID: string = faker.datatype.uuid();
-      const fakeName: string = faker.name.firstName();
-      const fakeLastName: string = faker.name.lastName();
-      const fakeEmail: string = faker.internet.exampleEmail(fakeName);
+    return data;
+  }
+  createOne(body): PostsDataBase[] {
+    const newUser: PostsDataBase = {
+      id: `${data.length + 1}`,
+      alias: body.alias,
+      email: body.email,
+      name: body.name,
+      lastName: body.lastName,
+    };
+    data.push(newUser);
+    return data;
+  }
+  findAllOrdered(sortBy): PostsDataBase[] {
+    if (!sortOrder[sortBy]) {
+      throw new PreconditionFailedException(
+        'Invalid parametres, try to use asc or desc',
+      );
+    }
 
-      data.push({
-        id: fakeID,
-        email: fakeEmail,
-        name: fakeName,
-        lastName: fakeLastName,
-      });
+    if (sortBy === sortOrder.asc) {
+      return data.sort((a, b) => (parseInt(a.id) < parseInt(b.id) ? 1 : -1));
+    } else if (sortBy === sortOrder.desc) {
+      return data.sort((a, b) => (parseInt(a.id) > parseInt(b.id) ? 1 : -1));
+    }
+    throw new PreconditionFailedException(
+      'Invalid parametres, try to use asc or desc',
+    );
+  }
+  updateOne(identificator, body): PostsDataBase[] {
+    for (const user of data) {
+      if (user.id == identificator) {
+        user['alias'] = body.alias;
+        user['email'] = body.email;
+        user['name'] = body.name;
+        user['lastName'] = body.lastName;
+      }
+    }
+    return data;
+  }
+  deleteOne(identificador): PostsDataBase[] {
+    for (const user of data) {
+      if (user.id == identificador) {
+        user['deleted'] = true;
+      }
     }
     return data;
   }
