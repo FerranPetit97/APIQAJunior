@@ -6,9 +6,10 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "docker:up": "docker build -t api-qa-junior . && docker run -dp 3000:3000 api-qa-junior",
+    "docker:up": "docker build -t api-qa-junior . && docker run -dp 3000:3000 --name api-qa-junior api-qa-junior",
     "docker:build": "docker build -t api-qa-junior .",
-    "docker:run": "docker run -dp 3000:3000 api-qa-junior",
+    "docker:run": "docker start api-qa-junior",
+    "docker:down": "docker stop api-qa-junior",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -23,7 +24,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:cypress": "npx cypress open",
-    "test:cypress:db": "npx cypress run --record --key 150824a6-c4aa-47c5-baef-f868450b35f6"
+    "test:cypress:db": "npm run docker:run && npx cypress run --record --key 150824a6-c4aa-47c5-baef-f868450b35f6 && npm run docker:down"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
@@ -48,6 +49,7 @@
     "cypress": "^10.11.0",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "28.1.3",
     "prettier": "^2.3.2",
